@@ -6,7 +6,6 @@
 //
 
 #import "NSObject+DDZombieDetector.h"
-#import "DDZombieMonitor+Private.h"
 #import "DDZombieMonitor.h"
 
 @implementation NSObject (DDZombieDetector)

@@ -42,6 +42,6 @@ typedef NS_ENUM(NSInteger, DDZombieDetectStrategy) {
 + (instancetype)sharedInstance;
 - (void)startMonitor;
 - (void)stopMonitor;
-
+- (void)newDealloc:(__unsafe_unretained id)obj;
 
 @end

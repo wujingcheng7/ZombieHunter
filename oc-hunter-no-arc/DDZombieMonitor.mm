@@ -16,7 +16,6 @@
 #import <UIKit/UIKit.h>
 
 #import "dsqueue.h"
-#import "DDZombieMonitor+Private.h"
 #import "NSObject+DDZombieDetector.h"
 #import "DDZombie.h"
 #import "DDThreadStack.hpp"
