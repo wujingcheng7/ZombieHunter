@@ -6,6 +6,7 @@
 //
 
 #import "DDThreadStack.hpp"
+#import "DPLogic.h"
 
 #import <mach/mach.h>
 #import <execinfo.h>
@@ -35,7 +36,7 @@ DDThreadStack::DDThreadStack()
 DDThreadStack::~DDThreadStack()
 {
     if (_stack) {
-        free(_stack);
+        dp_always_free_really(_stack);
         _stack = nullptr;
     }
 }

@@ -7,6 +7,7 @@
 
 #include "dsqueue.h"
 
+#include <DPLogic.h>
 
 struct DSQueue {
     /* An array of elements in the queue. */
@@ -83,8 +84,8 @@ ds_queue_free(struct DSQueue *queue)
         fprintf(stderr, "Could not destroy cond var. Errno: %d\n", errno);
         exit(1);
     }
-    free(queue->buf);
-    free(queue);
+    dp_always_free_really(queue->buf);
+    dp_always_free_really(queue);
 }
 
 int

@@ -21,6 +21,8 @@
 #import "DDZombie.h"
 #import "DDThreadStack.hpp"
 
+#import "DPLogic.h"
+
 static NSInteger kDefaultMaxOccupyMemorySize = 10 * 1024 * 1024;
 static uint32_t  kEstimateZombieObjectSize = 64; //对象平均大小64Byte
 static uint32_t  kEstimateDeallocStackSize = 91; //释放栈平均大小，释放栈平均depth为15，ARM64下栈大小为15*5，DDThreadStack大小16Byte
@@ -207,7 +209,7 @@ void replaceSelectorWithSelector(Class aCls,
     threadStackMemSize = [zombieObject calculateThreadStackSizeAndFreeThreadStack];
     size_t zombieObjectSize = malloc_size(obj);
     size_t total_size = threadStackMemSize + zombieObjectSize;
-    free(obj);
+    dp_always_free_really(obj);
     __sync_fetch_and_sub(&_occupyMemorySize, (int)(total_size));
 }
 
@@ -223,7 +225,7 @@ void replaceSelectorWithSelector(Class aCls,
             CFSetAddValue(_customRegisteredClasses, (__bridge const void *)(aClass));
         }
         //内存释放，参考：http://opensource.apple.com//source/objc4/objc4-437.3/test/weak.m
-        free(classNames);
+        dp_always_free_really(classNames);
     }
 }
     
