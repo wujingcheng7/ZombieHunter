@@ -42,14 +42,14 @@
 
 + (DDZombieDetectStrategy)strategyConvert:(WJCZombieOCDetectStrategy)origin {
     switch (origin) {
+        case WJCZombieOCDetectStrategyAll:
+            return DDZombieDetectStrategyAll;
         case WJCZombieOCDetectStrategyCustomObjectOnly:
             return DDZombieDetectStrategyCustomObjectOnly;
         case WJCZombieOCDetectStrategyWhitelist:
             return DDZombieDetectStrategyWhitelist;
         case WJCZombieOCDetectStrategyBlacklist:
             return DDZombieDetectStrategyBlacklist;
-        case WJCZombieOCDetectStrategyAll:
-            return DDZombieDetectStrategyAll;
         default:
             return DDZombieDetectStrategyCustomObjectOnly;
     }

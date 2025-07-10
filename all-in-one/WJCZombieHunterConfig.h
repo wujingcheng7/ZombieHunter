@@ -10,10 +10,10 @@
 NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSInteger, WJCZombieOCDetectStrategy) {
-    WJCZombieOCDetectStrategyCustomObjectOnly = 0, // 只监控自定义对象, 默认使用该策略
-    WJCZombieOCDetectStrategyBlacklist = 1, //使用黑名单
-    WJCZombieOCDetectStrategyWhitelist = 2, //使用白名单
-    WJCZombieOCDetectStrategyAll = 3, //监控所有对象，强制过滤类除外
+    WJCZombieOCDetectStrategyAll = 0, // 监控所有对象，强制过滤类除外, 默认使用该策略
+    WJCZombieOCDetectStrategyBlacklist = 1, // 使用黑名单
+    WJCZombieOCDetectStrategyWhitelist = 2, // 使用白名单
+    WJCZombieOCDetectStrategyCustomObjectOnly = 3, // 只监控自定义对象
 };
 
 /// Config for C Language
@@ -43,7 +43,7 @@ typedef NS_ENUM(NSInteger, WJCZombieOCDetectStrategy) {
 @property (nonatomic) NSInteger maxOccupyMemorySizeBytes;
 /// 是否记录 dealloc 栈，Default is YES
 @property (nonatomic) BOOL traceDeallocStack;
-/// 监控策略，Default is CustomObjectOnly
+/// 监控策略，Default is .all
 @property (nonatomic) WJCZombieOCDetectStrategy detectStrategy;
 /// Only work when self.detectStrategy == .blacklist，Default is nil
 @property (nonatomic, strong, nullable) NSArray<NSString*> *blackList;
@@ -59,7 +59,11 @@ typedef NS_ENUM(NSInteger, WJCZombieOCDetectStrategy) {
  * @param deallocStack zombie对象释放栈，格式:{\ntid:xxx\nstack:[xxx,xxx,xxx]\n},栈为未符号化的函数地址
  * @param zombieStack  zombie对象调用栈，格式:{\ntid:xxx\nstack:[xxx,xxx,xxx]\n},栈为未符号化的函数地址
  */
-@property (nonatomic, strong, nullable) void (^handler)(NSString *className, void* obj, NSString *selectorName, NSString* deallocStack, NSString *zombieStack);
+@property (nonatomic, strong, nullable) void (^handler)(NSString * _Nullable className,
+                                                        void *obj,
+                                                        NSString * _Nullable selectorName,
+                                                        NSString * _Nullable deallocStack,
+                                                        NSString * _Nullable zombieStack);
 
 @end
 

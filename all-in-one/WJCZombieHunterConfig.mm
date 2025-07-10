@@ -40,7 +40,7 @@
         _crashWhenDetectedZombie = YES;
         _maxOccupyMemorySizeBytes = 10 * 1024 * 1024;
         _traceDeallocStack = YES;
-        _detectStrategy = WJCZombieOCDetectStrategyCustomObjectOnly;
+        _detectStrategy = WJCZombieOCDetectStrategyAll;
         _blackList = nil;
         _whiteList = nil;
         _filterList = nil;
