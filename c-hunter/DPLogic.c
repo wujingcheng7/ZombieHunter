@@ -52,19 +52,19 @@ void dp_free_some_mem(size_t freeNum) {
 void dp_my_free(void* p) {
     if (!atomic_load(&dp_monitorShouldWork)) {
         // 已经停止监控了，直接释放即可
-        dp_always_free_really(p);
+        dp_orig_free(p);
         return;
     }
     if (dp_is_oc_object(p)) {
         // OC 对象这里不管，让 DDZombieMonitor 去处理
-        dp_always_free_really(p);
+        dp_orig_free(p);
         return;
     }
     int unFreeCount = (int)dp_queue_length(dp_unfreeQueue);
     if (unFreeCount > dp_maxStealMemoryNumber * 0.9 || dp_unfreeSize > dp_maxStealMemorySize) {
         // 空间不够了，释放一些空间，这个对象也直接释放
         dp_free_some_mem(dp_batchFreeNumber);
-        dp_always_free_really(p);
+        dp_orig_free(p);
     } else {
         // 0x55 处理，让野指针提前暴露
         size_t memSize = malloc_size(p);
@@ -75,7 +75,7 @@ void dp_my_free(void* p) {
 }
 
 // 初始化安全释放
-void dp_swizzle_free() {
+void dp_swizzle_free(void) {
     if (atomic_load(&dp_freeDidSwizzled)) {
         return;
     }
@@ -89,11 +89,12 @@ void dp_swizzle_free() {
     return;
 }
 
-void dp_start_monitor() {
-    atomic_store(&dp_monitorShouldWork, true);
+void dp_start_monitor(void) {
+    dp_init_registeredClass();
     dp_swizzle_free();
+    atomic_store(&dp_monitorShouldWork, true);
 }
 
-void dp_end_monitor() {
+void dp_end_monitor(void) {
     atomic_store(&dp_monitorShouldWork, false);
 }

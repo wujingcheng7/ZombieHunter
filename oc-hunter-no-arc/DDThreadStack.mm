@@ -69,7 +69,7 @@ string DDThreadStack::currentStackInfo()
 #define TMP_BUF_LEN 32
     char tmp_buf[TMP_BUF_LEN] = {0};
     string stack_info = "{\ntid:";
-    sprintf(tmp_buf, "%d", _tid);
+    snprintf(tmp_buf, TMP_BUF_LEN, "%d", _tid);
     stack_info += tmp_buf;
     stack_info += "\nstack:[";
     unsigned char* cur_stack_ptr = _stack;
@@ -80,7 +80,7 @@ string DDThreadStack::currentStackInfo()
             vm_address_t address = 0;
             memcpy(&address, cur_stack_ptr, HY_SIZE_PER_STACK);
              //printf("0x%016lx\n", address);
-            sprintf(tmp_buf, "0x%016lx,", address);
+            snprintf(tmp_buf, TMP_BUF_LEN, "0x%016lx,", address);
             stack_info += tmp_buf;
             cur_stack_ptr += HY_SIZE_PER_STACK;
         }

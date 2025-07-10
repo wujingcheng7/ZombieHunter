@@ -14,6 +14,7 @@
 extern "C" {
 #endif
 
+void dp_init_registeredClass(void);
 bool dp_is_oc_object(void *p);
 
 #ifdef __cplusplus

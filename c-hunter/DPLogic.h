@@ -38,9 +38,9 @@ extern "C" {
 /// 总是直接调用 free 函数
 void dp_always_free_really(void* p);
 /// 开始监控
-void dp_start_monitor();
+void dp_start_monitor(void);
 /// 停止监控
-void dp_end_monitor();
+void dp_end_monitor(void);
 
 #ifdef __cplusplus
 }
