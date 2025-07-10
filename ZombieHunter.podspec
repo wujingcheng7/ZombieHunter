@@ -55,6 +55,7 @@ Pod::Spec.new do |s|
     sp.source_files = 'oc-hunter-arc/*.{h,m,c}'
     sp.requires_arc = true
     sp.frameworks   = 'Foundation'
+    sp.private_header_files = 'oc-hunter-arc/DDZombieMonitor+Private.h'
     sp.dependency 'ZombieHunter/c-hunter'
   end
 

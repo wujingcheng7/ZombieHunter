@@ -81,7 +81,11 @@ void dp_swizzle_free(void) {
     }
     dp_unfreeQueue = dp_queue_create(dp_maxStealMemoryNumber);
     struct rebinding rebindings_arr[] = {
-        {"free", dp_my_free, &dp_orig_free}
+        {
+            .name = "free",
+            .replacement = (void *)dp_my_free,
+            .replaced = (void **)&dp_orig_free
+        }
     };
     size_t rebindings_size = sizeof(rebindings_arr) / sizeof(rebindings_arr[0]);
     rebind_symbols(rebindings_arr, rebindings_size);

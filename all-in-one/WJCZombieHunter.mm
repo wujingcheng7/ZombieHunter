@@ -28,9 +28,9 @@
     }
     if (config.cConfig.shouldWork) {
         WJCZombieHunterCConfig *cConfig = config.cConfig;
-        dp_maxStealMemorySize = cConfig.maxStealMemorySizeBytes;
-        dp_maxStealMemoryNumber = cConfig.maxStealMemoryNumber;
-        dp_batchFreeNumber = cConfig.batchFreeNumber;
+        dp_maxStealMemorySize = (int)cConfig.maxStealMemorySizeBytes;
+        dp_maxStealMemoryNumber = (int)cConfig.maxStealMemoryNumber;
+        dp_batchFreeNumber = (int)cConfig.batchFreeNumber;
         dp_start_monitor();
     }
 }
