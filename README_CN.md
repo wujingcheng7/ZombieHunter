@@ -30,10 +30,15 @@ pod 'ZoombieHunter'
 
 ## 贡献
 
-作者复制了 AlexTing0 的开源库，OC 僵尸对象的核心代码来自于这里
-作者阅读了 TencentBuglyTeam/陈其锋 的技术文章，C 野指针的核心思路来自于这里
-整理后形成了这个库，并且制作成 pod 以方便所有人使用
-特此鸣谢以下优秀开发者:
+### 贡献简述
+
+- OC 僵尸对象的核心代码来自于 AlexTing0 的开源库
+- C 野指针的核心思路来自于 TencentBuglyTeam/陈其锋 的技术文章
+- C 野指针的代码依赖于 Facebook 的 fishhook，由于 fishhook 0.2 有 bug，所以直接使用了最新代码
+  - 使用的 fishhook 版本: aadc161ac3b80db07a9908851839a17ba63a9eb1
+- 整理后形成了这个库，并且制作成 pod 以方便所有人使用
+
+### 贡献链接
 
 - AlexTing0
   - homepage: <https://github.com/AlexTing0>
@@ -45,6 +50,11 @@ pod 'ZoombieHunter'
   - article1: <https://cloud.tencent.com/developer/article/1070505>
   - article2: <https://cloud.tencent.com/developer/article/1070512>
   - article3: <https://cloud.tencent.com/developer/article/2256759>
+
+- FacebookTeam
+  - homepage: <https://github.com/facebook>
+  - repo: <https://github.com/facebook/fishhook>
+  - repoVersion: aadc161ac3b80db07a9908851839a17ba63a9eb1
 
 ## 开源协议
 

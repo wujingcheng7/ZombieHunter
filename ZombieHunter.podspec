@@ -32,4 +32,12 @@ Pod::Spec.new do |s|
     sp.requires_arc = true
   end
 
+  s.subspec 'c-hunter' do |sp|
+    sp.source_files = 'c-hunter/*.{h,c}'
+  end
+
+  s.subspec 'facebook-fishhook' do |sp|
+    sp.source_files = 'facebook-fishhook/*.{h,c}'
+  end
+
 end
