@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   s.homepage      = "https://github.com/wujingcheng7/ZombieHunter"
   s.license       = { :type => "MIT", :file => "LICENSE" }
   s.author        = { "wujc" => "love@jingchengwu.cn" }
-  s.platform      = :ios, "12.0"
+  s.platform      = :ios, "9.0"
   s.frameworks    = 'Foundation'
   s.source        = { :git => "https://github.com/wujingcheng7/ZombieHunter.git", :tag => "#{s.version}" }
 
