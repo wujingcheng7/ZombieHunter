@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
 
   s.name          = "ZombieHunter"
-  s.version       = "0.0.8"
+  s.version       = "0.0.9"
   s.summary       = "iOS find Zombie object, support both C/OC"
 
   s.description   = <<-DESC
