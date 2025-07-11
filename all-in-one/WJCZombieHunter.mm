@@ -7,6 +7,7 @@
 
 #import "WJCZombieHunter.h"
 #import "DDZombieMonitor.h"
+#import "DDBinaryImages.h"
 #import "DPLogic.h"
 
 @implementation WJCZombieHunter
@@ -56,6 +57,10 @@
 + (void)stopWork {
     [[DDZombieMonitor sharedInstance] stopMonitor]; // OC stop
     dp_end_monitor(); // C stop
+}
+
++ (NSMutableArray *)binaryImages {
+    return [DDBinaryImages binaryImages];
 }
 
 + (DDZombieDetectStrategy)strategyConvert:(WJCZombieOCDetectStrategy)origin {

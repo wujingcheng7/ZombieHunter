@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (void)startWorkWithConfig:(WJCZombieHunterConfig *)config;
 + (void)stopWork;
++ (NSMutableArray<NSString *>*)binaryImages;
 
 @end
 
