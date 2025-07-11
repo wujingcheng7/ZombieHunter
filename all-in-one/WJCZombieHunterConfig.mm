@@ -23,8 +23,8 @@
     return self;
 }
 
-- (BOOL)crashEarly {
-    return _shouldWork;
+- (BOOL)crashWhenDetectedZombie {
+    return YES;
 }
 
 @end

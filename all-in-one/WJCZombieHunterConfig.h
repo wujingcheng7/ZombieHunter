@@ -21,8 +21,8 @@ typedef NS_ENUM(NSInteger, WJCZombieOCDetectStrategy) {
 
 /// ShouldWorkForCLanguage ? Default is YES
 @property (nonatomic) BOOL shouldWork;
-/// 让 C 野指针提前崩溃？Value Equal To "self.shouldWork"
-@property (nonatomic, readonly) BOOL crashEarly;
+/// 监测到 zombie 时是否触发 crash，Always is YES
+@property (nonatomic, readonly) BOOL crashWhenDetectedZombie;
 /// 最多保留多少总内存的 C 指针？Default is 10 MB
 @property (nonatomic) NSInteger maxStealMemorySizeBytes;
 /// 最多保留多少个 C 指针? Default is 10 M
