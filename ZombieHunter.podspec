@@ -37,6 +37,7 @@ Pod::Spec.new do |s|
 
   s.subspec 'c-hunter' do |sp|
     sp.source_files = 'c-hunter/*.{h,c,mm}'
+    sp.private_header_files = 'c-hunter/*.h'
     sp.requires_arc = true
     sp.frameworks   = 'Foundation'
     sp.dependency 'ZombieHunter/facebook-fishhook'
@@ -44,6 +45,7 @@ Pod::Spec.new do |s|
   
   s.subspec 'oc-hunter-no-arc' do |sp|
     sp.source_files = 'oc-hunter-no-arc/*.{h,hpp,mm,m}'
+    sp.private_header_files = 'oc-hunter-no-arc/*.{h,hpp}'
     sp.requires_arc = false
     sp.frameworks   = 'Foundation'
     sp.libraries    = 'c++'
@@ -53,6 +55,7 @@ Pod::Spec.new do |s|
 
   s.subspec 'oc-hunter-arc' do |sp|
     sp.source_files = 'oc-hunter-arc/*.{h,m,c}'
+    sp.private_header_files = 'oc-hunter-arc/*.h'
     sp.requires_arc = true
     sp.frameworks   = 'Foundation'
     sp.dependency 'ZombieHunter/c-hunter'
@@ -60,6 +63,7 @@ Pod::Spec.new do |s|
 
   s.subspec 'facebook-fishhook' do |sp|
     sp.source_files = 'facebook-fishhook/*.{h,c}'
+    sp.private_header_files = 'facebook-fishhook/*.h'
     sp.requires_arc = false
   end
 
