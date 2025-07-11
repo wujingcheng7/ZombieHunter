@@ -43,7 +43,7 @@ Pod::Spec.new do |s|
   end
   
   s.subspec 'oc-hunter-no-arc' do |sp|
-    sp.source_files = 'oc-hunter-no-arc/*.{h,hpp,mm}'
+    sp.source_files = 'oc-hunter-no-arc/*.{h,hpp,mm,m}'
     sp.requires_arc = false
     sp.frameworks   = 'Foundation'
     sp.libraries    = 'c++'
