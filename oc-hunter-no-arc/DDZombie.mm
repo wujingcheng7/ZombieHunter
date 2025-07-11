@@ -64,7 +64,7 @@
 
 - (void)doNothing
 {
-    NSLog(@"我只是保护一下crash，什么也不干");
+    // 我只是保护一下crash，什么也不干
 }
 
 - (void)forwardInvocation:(NSInvocation *)anInvocation
