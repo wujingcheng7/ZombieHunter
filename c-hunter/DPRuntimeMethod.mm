@@ -29,5 +29,5 @@ bool dp_is_oc_object(void* p) {
     // 检查是否是有效的 isa 指针
     Class cls = object_getClass((__bridge id)p);
     if (!cls) return false;
-    return CFSetContainsValue(registeredClasses, &cls);
+    return CFSetContainsValue(registeredClasses, (void *)cls);
 }
