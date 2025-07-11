@@ -11,7 +11,25 @@
 
 @implementation WJCZombieHunter
 
++ (WJCZombieHunter *)shared {
+    static WJCZombieHunter *sharedInstance;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        sharedInstance = [WJCZombieHunter new];
+        [[NSNotificationCenter defaultCenter] addObserver:sharedInstance
+                                                 selector:@selector(handleMemoryWarning)
+                                                     name:UIApplicationDidReceiveMemoryWarningNotification
+                                                   object:nil];
+    });
+    return sharedInstance;
+}
+
+- (void)handleMemoryWarning {
+    dp_free_some_memory_if_needed();
+}
+
 + (void)startWorkWithConfig:(WJCZombieHunterConfig *)config {
+    [self shared]; // listen memory warnings
     [self stopWork];
     if (config.ocConfig.shouldWork) {
         WJCZombieHunterOCConfig *ocConfig = config.ocConfig;

@@ -35,6 +35,8 @@ extern int dp_batchFreeNumber;
 extern "C" {
 #endif
 
+/// 释放一部分内存
+void dp_free_some_memory_if_needed(void);
 /// 总是直接调用 free 函数
 void dp_always_free_really(void* p);
 /// 开始监控

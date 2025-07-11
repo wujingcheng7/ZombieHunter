@@ -49,6 +49,10 @@ void dp_free_some_mem(size_t freeNum) {
     }
 }
 
+void dp_free_some_memory_if_needed(void) {
+    dp_free_some_mem(dp_batchFreeNumber);
+}
+
 void dp_my_free(void* p) {
     if (!atomic_load(&dp_monitorShouldWork)) {
         // 已经停止监控了，直接释放即可
