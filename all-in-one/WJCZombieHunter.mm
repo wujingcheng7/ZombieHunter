@@ -50,7 +50,22 @@
         ocMonitor.blackList = ocConfig.blackList;
         ocMonitor.whiteList = ocConfig.whiteList;
         ocMonitor.filterList = ocConfig.filterList;
-        ocMonitor.handle = ocConfig.handler;
+        WJCZombieDetectionHandler handler = ocConfig.handler;
+        if (handler) {
+            ocMonitor.handle = ^(NSString *className,
+                                 void *obj,
+                                 NSString *selectorName,
+                                 NSString *deallocStack,
+                                 NSString *zombieStack) {
+                handler(className ?: @"",
+                                 obj,
+                                 selectorName ?: @"",
+                                 deallocStack ?: @"",
+                                 zombieStack ?: @"");
+            };
+        } else {
+            ocMonitor.handle = nil;
+        }
         [ocMonitor startMonitor];
     }
     if (config.cConfig.shouldWork) {
