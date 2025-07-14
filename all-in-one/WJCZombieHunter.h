@@ -12,8 +12,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface WJCZombieHunter : NSObject
 
-+ (void)startWorkWithConfig:(WJCZombieHunterConfig *)config;
-+ (void)stopWork;
++ (BOOL)isMonitoring;
++ (void)startMonitoringWithConfig:(WJCZombieHunterConfig *)config NS_SWIFT_NAME(startMonitoring(config:));
++ (void)stopMonitoring;
 + (NSMutableArray<NSString *>*)binaryImages;
 
 @end

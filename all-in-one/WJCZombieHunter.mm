@@ -10,6 +10,12 @@
 #import "DDBinaryImages.h"
 #import "DPLogic.h"
 
+@interface WJCZombieHunter ()
+
+@property (nonatomic) BOOL isMonitoring;
+
+@end
+
 @implementation WJCZombieHunter
 
 + (WJCZombieHunter *)shared {
@@ -29,9 +35,11 @@
     dp_free_some_memory_if_needed();
 }
 
-+ (void)startWorkWithConfig:(WJCZombieHunterConfig *)config {
-    [self shared]; // listen memory warnings
-    [self stopWork];
++ (void)startMonitoringWithConfig:(WJCZombieHunterConfig *)config {
+    if ([self isMonitoring]) {
+        [self stopMonitoring];
+    }
+    [self shared].isMonitoring = YES;
     if (config.ocConfig.shouldWork) {
         WJCZombieHunterOCConfig *ocConfig = config.ocConfig;
         DDZombieMonitor *ocMonitor = [DDZombieMonitor sharedInstance];
@@ -54,9 +62,14 @@
     }
 }
 
-+ (void)stopWork {
++ (void)stopMonitoring {
+    [self shared].isMonitoring = NO;
     [[DDZombieMonitor sharedInstance] stopMonitor]; // OC stop
     dp_end_monitor(); // C stop
+}
+
++ (BOOL)isMonitoring {
+    return [self shared].isMonitoring;
 }
 
 + (NSMutableArray *)binaryImages {
