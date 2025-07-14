@@ -2,6 +2,10 @@
 
 | Helps detect wild pointers/zombie objects/dangling references in iOS projects early, supports OC/C
 
+![CocoaPods Version](https://img.shields.io/cocoapods/v/ZombieHunter.svg?style=flat)
+![Platform](https://img.shields.io/cocoapods/p/ZombieHunter.svg?style=flat)
+![License](https://img.shields.io/cocoapods/l/ZombieHunter.svg?style=flat)
+
 ## [中文介绍](README_CN.md)
 
 ## Features

@@ -2,6 +2,10 @@
 
 | 帮助你尽早发现 iOS 项目中的 野指针/僵尸对象/悬垂引用，支持 OC/C
 
+![CocoaPods Version](https://img.shields.io/cocoapods/v/ZombieHunter.svg?style=flat)
+![Platform](https://img.shields.io/cocoapods/p/ZombieHunter.svg?style=flat)
+![License](https://img.shields.io/cocoapods/l/ZombieHunter.svg?style=flat)
+
 ## 功能
 
 ### Objective-C 对象
