@@ -20,10 +20,10 @@
   - Stack trace when object was deallocated
   - Stack trace when object was called
 - Offers 4 monitoring strategies:
-  - Monitor only custom objects (default strategy)
+  - Monitor all objects (with mandatory class filtering) (default strategy)
+  - Monitor only custom objects
   - Use blacklist
   - Use whitelist
-  - Monitor all objects (with mandatory class filtering)
 - Configurable maximum memory usage (default: 10MB)
 - Configurable whether to record deallocation stack (default: YES)
 - Configurable whether to crash when zombie is detected (default: YES)
