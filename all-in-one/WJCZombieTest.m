@@ -6,30 +6,21 @@
 //
 
 #import "WJCZombieTest.h"
+#import <UIKit/UIKit.h>
 
-#define WJCZombieTestRightMagicNumber 233
-#define WJCZombieTestAccidentMagicNumber -1
-
-@interface WJCZombieTestObject : NSObject
-
-@property (nonatomic) NSInteger magicNumber;
-
-@end
-
-@implementation WJCZombieTestObject
-
-@end
+#define WJCZombieTestCorrectMagicNumber 19450815
+#define WJCZombieTestWrongMagicNumber 19310918
 
 @implementation WJCZombieTest
 
 + (void)testOCZombieWithAccidentalCoverage:(BOOL)accidentalCoverage {
     [self logOCEvent:accidentalCoverage event:@"start"];
-    __unsafe_unretained WJCZombieTestObject* zombieObject;
+    __unsafe_unretained UIView* zombieObject;
     NSMutableArray *array = [NSMutableArray new];
 
     @autoreleasepool {
-        WJCZombieTestObject *newObject = [WJCZombieTestObject new];
-        newObject.magicNumber = WJCZombieTestRightMagicNumber;
+        UIView *newObject = [UIView new];
+        newObject.tag = WJCZombieTestCorrectMagicNumber;
         zombieObject = newObject;
     }
 
@@ -37,18 +28,19 @@
 
     if (accidentalCoverage) {
         @autoreleasepool { // 假如释放的内存上又意外填上了另一个对象的指针，而那个对象有着相似的内存结构
-            WJCZombieTestObject* accidentalObject = [WJCZombieTestObject new];
-            accidentalObject.magicNumber = WJCZombieTestAccidentMagicNumber;
+            UIView* accidentalObject = [UIView new];
+            accidentalObject.tag = WJCZombieTestWrongMagicNumber;
             [array addObject:accidentalObject];
             [[NSRunLoop mainRunLoop] runMode:NSDefaultRunLoopMode beforeDate:nil];
         }
     }
 
     // 这里调用一下僵尸对象
+    NSInteger result = zombieObject.tag;
     [self logOCEvent:accidentalCoverage
                event:[[NSString alloc] initWithFormat:@"result[%d]%@",
-                      zombieObject.magicNumber,
-                      (zombieObject.magicNumber == WJCZombieTestRightMagicNumber) ? @"✅" : @"❌"
+                      result,
+                      (result == WJCZombieTestCorrectMagicNumber) ? @"✅" : @"❌"
                      ]];
     [self logOCEvent:accidentalCoverage event:@"end"];
 }
@@ -56,7 +48,7 @@
 + (void)logOCEvent:(BOOL)accidentalCoverage event:(NSString *)event {
     NSLog(@"[ZombieHunter]-accidentalCoverage[%@]-correct[%d]-%@",
           accidentalCoverage ? @"YES" : @"NO",
-          WJCZombieTestRightMagicNumber,
+          WJCZombieTestCorrectMagicNumber,
           event);
 }
 
