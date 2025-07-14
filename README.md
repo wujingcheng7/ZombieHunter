@@ -1,4 +1,4 @@
-# ZoombieHunter
+# ZombieHunter
 
 | Helps detect wild pointers/zombie objects/dangling references in iOS projects early, supports OC/C
 

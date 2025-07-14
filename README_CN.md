@@ -1,4 +1,4 @@
-# ZoombieHunter
+# ZombieHunter
 
 | 帮助你尽早发现 iOS 项目中的 野指针/僵尸对象/悬垂引用，支持 OC/C
 
@@ -20,7 +20,7 @@
   - 监控所有对象，强制过滤类除外
 - 可控制最大占用内存大小，默认 10MB
 - 可控制是否记录释放栈，默认 YES
-- 可控制检测到Zoombie时是否崩溃，默认YES
+- 可控制检测到 Zombie 时是否崩溃，默认YES
 - 可使用 Symbolicating.py 文件，对栈信息进行符号化
 
 ### C 指针
@@ -33,7 +33,7 @@
 ### Podfile 文件代码
 
 ```Ruby
-pod 'ZoombieHunter'
+pod 'ZombieHunter'
 # 如果你只希望在 Debug 模式下使用，可以使用如下代码
 # pod 'ZombieHunter', :configurations => ['Debug', 'Inhouse', 'Dev']
 ```
@@ -137,4 +137,4 @@ pod 'ZoombieHunter'
 
 ## 开源协议
 
-ZoombieHunter 使用 MIT 协议，可以随意使用
+ZombieHunter 使用 MIT 协议，可以随意使用
