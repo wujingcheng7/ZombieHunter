@@ -77,6 +77,31 @@ pod 'ZombieHunter'
 - (void)whenEverYourWantToStopMonitorZombie {
     [WJCZombieHunter stopWork]; // Stop monitoring
 }
+
+- (void)testZombieWithAccidentalCoverage {
+    /*
+     If ZombieHunter OC monitoring is NOT enabled:
+     Output: [ZombieHunter]-accidentalCoverage[YES]-correct[19450815]-result[19310918]❌
+     This indicates your program isn't crashing yet, but producing uncontrolled incorrect results
+
+     If ZombieHunter OC monitoring is enabled:
+     The ocConfig.handler will provide detailed information, allowing you to take any desired action 
+     (e.g., upload logs/force quit the app/etc.)
+     */
+    [WJCZombieTest testOCZombieWithAccidentalCoverage:YES];
+}
+
+- (void)testZombieWithoutAccidentalCoverage {
+    /*
+     If ZombieHunter OC monitoring is NOT enabled:
+     Immediate crash: Thread 1: EXC_BAD_ACCESS
+
+     If ZombieHunter OC monitoring is enabled:
+     The ocConfig.handler will provide detailed information, allowing you to take any desired action
+     (e.g., upload logs/prevent immediate crash/etc.)
+     */
+    [WJCZombieTest testOCZombieWithAccidentalCoverage:NO];
+}
 ```
 
 ### Code Notes

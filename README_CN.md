@@ -75,6 +75,29 @@ pod 'ZoombieHunter'
 - (void)whenEverYourWantToStopMonitorZombie {
     [WJCZombieHunter stopWork]; // 停止监控
 }
+
+- (void)testZombieWithAccidentalCoverage {
+    /*
+     如果未开启 ZombieHunter OC 监控
+     则输出: [ZombieHunter]-accidentalCoverage[YES]-correct[19450815]-result[19310918]❌
+     这代表你的程序虽然暂时没有崩溃，但是却提供了不受控制的错误结果
+
+     如果开启了 ZombieHunter OC 监控
+     则会调用 ocConfig.handler 向你提供详细信息，你可以做任何你想做的事情，例如 上传日志/主动关闭应用 等
+     */
+    [WJCZombieTest testOCZombieWithAccidentalCoverage:YES];
+}
+
+- (void)testZombieWithoutAccidentalCoverage {
+    /*
+     如果未开启 ZombieHunter OC 监控
+     则直接崩溃 Thread 1: EXC_BAD_ACCESS
+
+     如果开启了 ZombieHunter OC 监控
+     则会调用 ocConfig.handler 向你提供详细信息，你可以做任何你想做的事情，例如 上传日志/避免直接崩溃 等
+     */
+    [WJCZombieTest testOCZombieWithAccidentalCoverage:NO];
+}
 ```
 
 ### 代码注意事项
