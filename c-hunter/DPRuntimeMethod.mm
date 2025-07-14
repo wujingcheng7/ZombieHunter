@@ -6,10 +6,13 @@
 //
 
 #include "DPRuntimeMethod.h"
+#include <malloc/malloc.h>
+#import <os/lock.h>
 #import <objc/runtime.h>
 #import <CoreFoundation/CoreFoundation.h>
 
 CFMutableSetRef registeredClasses;
+static os_unfair_lock zombieCheckLock = OS_UNFAIR_LOCK_INIT;
 
 void dp_init_registeredClass(void) {
     static dispatch_once_t onceToken;
@@ -25,9 +28,22 @@ void dp_init_registeredClass(void) {
     });
 }
 
-bool dp_is_oc_object(void* p) {
-    // 检查是否是有效的 isa 指针
-    Class cls = object_getClass((__bridge id)p);
-    if (!cls) return false;
-    return CFSetContainsValue(registeredClasses, (void *)cls);
+bool dp_is_oc_object(void *p) {
+    if (!p) {
+        return false;
+    }
+    vm_address_t address = (vm_address_t)p;
+    if (address < 0x1000 || address > UINT32_MAX) {
+        return false;
+    }
+    id idP = (__bridge id)p;
+    if (!idP) {
+        return false;
+    }
+    Class cls = object_getClass(idP);
+    if (!cls) {
+        return false;
+    }
+    bool result = CFSetContainsValue(registeredClasses, (void *)cls);
+    return result;
 }
