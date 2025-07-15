@@ -60,11 +60,11 @@ pod 'ZombieHunter'
     config.ocConfig.blackList = nil; // 自定义监控黑名单，需要 config.ocConfig.detectStrategy = .blacklist
     config.ocConfig.filterList = nil; // 自定义过滤名单
     config.ocConfig.maxOccupyMemorySizeBytes = 50 * 1024 * 1024; // 自定义最大内存缓存
-    config.ocConfig.handler = ^(NSString * _Nullable className,
+    config.ocConfig.handler = ^(NSString * _Nonnull className,
                                 void * _Nonnull obj,
-                                NSString * _Nullable selectorName,
-                                NSString * _Nullable deallocStack,
-                                NSString * _Nullable zombieStack) {
+                                NSString * _Nonnull selectorName,
+                                NSString * _Nonnull deallocStack,
+                                NSString * _Nonnull zombieStack) {
         // 自定义如何使用这些信息
     };
 

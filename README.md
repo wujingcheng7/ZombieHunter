@@ -62,11 +62,11 @@ pod 'ZombieHunter'
     config.ocConfig.blackList = nil; // Custom blacklist (requires config.ocConfig.detectStrategy = .blacklist)
     config.ocConfig.filterList = nil; // Custom filter list
     config.ocConfig.maxOccupyMemorySizeBytes = 50 * 1024 * 1024; // Custom max memory cache
-    config.ocConfig.handler = ^(NSString * _Nullable className,
+    config.ocConfig.handler = ^(NSString * _Nonnull className,
                                 void * _Nonnull obj,
-                                NSString * _Nullable selectorName,
-                                NSString * _Nullable deallocStack,
-                                NSString * _Nullable zombieStack) {
+                                NSString * _Nonnull selectorName,
+                                NSString * _Nonnull deallocStack,
+                                NSString * _Nonnull zombieStack) {
         // Custom handling of this information
     };
 
