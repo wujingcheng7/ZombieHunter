@@ -6,6 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "WJCZombieInfo.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -16,20 +17,7 @@ typedef NS_ENUM(NSInteger, WJCZombieOCDetectStrategy) {
     WJCZombieOCDetectStrategyCustomObjectOnly = 3, // 只监控自定义对象
 };
 
-/**
- * @param className zombie对象名
- * @param obj zombie对象地址
- * @param selectorName selector
- * @param deallocStack zombie对象释放栈，格式:{\ntid:xxx\nstack:[xxx,xxx,xxx]\n},栈为未符号化的函数地址
- * @param zombieStack  zombie对象调用栈，格式:{\ntid:xxx\nstack:[xxx,xxx,xxx]\n},栈为未符号化的函数地址
- */
-typedef void (^WJCZombieDetectionHandler)(
-    NSString * _Nonnull className,
-    void * _Nonnull obj,
-    NSString * _Nonnull selectorName,
-    NSString * _Nonnull deallocStack,
-    NSString * _Nonnull zombieStack
-);
+typedef void (^WJCZombieDetectionHandler)(WJCZombieInfo* _Nonnull zombieInfo);
 
 /// Config for C Language
 @interface WJCZombieHunterCConfig : NSObject

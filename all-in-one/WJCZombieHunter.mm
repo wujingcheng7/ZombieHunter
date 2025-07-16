@@ -57,11 +57,15 @@
                                  NSString *selectorName,
                                  NSString *deallocStack,
                                  NSString *zombieStack) {
-                handler(className ?: @"",
-                                 obj,
-                                 selectorName ?: @"",
-                                 deallocStack ?: @"",
-                                 zombieStack ?: @"");
+                WJCZombieInfo *zombieInfo = [WJCZombieInfo new];
+                zombieInfo.className = className ?: @"";
+                zombieInfo.obj = obj;
+                zombieInfo.selectorName = selectorName ?: @"";
+                zombieInfo.deallocStack = deallocStack ?: @"";
+                zombieInfo.zombieStack = zombieStack ?: @"";
+                if (handler) {
+                    handler(zombieInfo);
+                }
             };
         } else {
             ocMonitor.handle = nil;
