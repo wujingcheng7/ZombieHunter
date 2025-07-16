@@ -1,187 +1,215 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import argparse
+import json
 import os
 import re
-import sys
-import json
-import zipfile
 import subprocess
-from tempfile import TemporaryDirectory
+import sys
+from bisect import bisect_left
 
-def extract_dsym(zip_path, extract_dir):
-    """解压 dsym.zip 文件"""
-    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-        zip_ref.extractall(extract_dir)
-    # 查找 DWARF 文件
-    for root, _, files in os.walk(extract_dir):
-        for file in files:
-            if file == 'Tutor':  # 修改为你的二进制名称
-                return os.path.join(root, file)
+class BinaryImage:
+    __slots__ = ('start', 'end', 'name', 'arch', 'uuid', 'path', 'start_int', 'end_int')
+    
+    def __init__(self, start, end, name, arch, uuid, path):
+        self.start = start
+        self.end = end
+        self.name = name
+        self.arch = arch
+        self.uuid = uuid.replace('-', '').lower()
+        self.path = path
+        self.start_int = int(start, 16)
+        self.end_int = int(end, 16)
+    
+    def contains_address(self, address):
+        addr_int = int(address, 16)
+        return self.start_int <= addr_int <= self.end_int
+
+class ImageManager:
+    def __init__(self):
+        self.images = []
+        self.sorted_starts = []
+    
+    def add_image(self, image):
+        self.images.append(image)
+        # 在插入时保持start地址有序
+        pos = bisect_left(self.sorted_starts, image.start_int)
+        self.sorted_starts.insert(pos, image.start_int)
+        self.images.sort(key=lambda x: x.start_int)
+    
+    def find_image(self, address):
+        addr_int = int(address, 16)
+        # 使用二分查找定位可能的image
+        pos = bisect_left(self.sorted_starts, addr_int)
+        if pos == 0:
+            if addr_int < self.sorted_starts[0]:
+                return None
+        elif pos >= len(self.sorted_starts):
+            pos = len(self.sorted_starts) - 1
+        
+        # 检查找到的image
+        candidate = self.images[pos - 1] if pos > 0 else self.images[0]
+        if candidate.contains_address(address):
+            return candidate
+        
+        # 检查相邻的image
+        for img in [self.images[pos - 1], self.images[pos]]:
+            if img.contains_address(address):
+                return img
+        return None
+
+def get_dwarf_uuid(dwarf_path, arch):
+    """获取DWARF文件的UUID"""
+    cmd = ['dwarfdump', '--arch', arch, '-u', dwarf_path]
+    try:
+        output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, text=True)
+        uuid_match = re.search(r'UUID: ([0-9A-Fa-f-]+)', output)
+        if uuid_match:
+            return uuid_match.group(1).replace('-', '').lower()
+    except subprocess.CalledProcessError as e:
+        print(f"dwarfdump failed: {e}")
     return None
 
-def get_binary_info(binary_path):
-    """获取二进制文件的架构和UUID"""
-    cmd = ['dwarfdump', '--arch=all', '--uuid', binary_path]
-    result = subprocess.run(cmd, capture_output=True, text=True)
-    info = {'architectures': [], 'uuids': {}}
-    if result.returncode == 0:
-        for line in result.stdout.splitlines():
-            if 'UUID:' in line:
-                parts = line.split()
-                arch = parts[1].strip('()')
-                uuid = parts[2]
-                info['architectures'].append(arch)
-                info['uuids'][arch] = uuid
-    return info
-
-def symbolicating(architecture, executable, load_address, address, uuid=None):
+def symbolize_address(addr, image_manager, dsym_path):
     """符号化单个地址"""
-    cmd = [
-        'atos',
-        '-arch', architecture,
-        '-o', executable,
-        '-l', load_address,
-        address
-    ]
-    if uuid:
-        cmd.extend(['--uuid', uuid])
+    image = image_manager.find_image(addr)
+    if not image:
+        return f"{addr} [Unknown Image]"
     
-    result = subprocess.run(cmd, capture_output=True, text=True)
-    if result.returncode == 0 and result.stdout.strip() != address:
-        return result.stdout.strip()
-    return None
+    # 主应用框架使用提供的dSYM
+    if '.app/' in image.path and dsym_path:
+        dwarf_file = os.path.join(dsym_path, 'Contents', 'Resources', 'DWARF', image.name)
+        if not os.path.exists(dwarf_file):
+            dwarf_file = dsym_path  # 可能直接是dwarf文件
+        
+        # 验证UUID匹配
+        dwarf_uuid = get_dwarf_uuid(dwarf_file, image.arch)
+        if dwarf_uuid and dwarf_uuid != image.uuid:
+            return f"{addr} [UUID Mismatch: {image.uuid} vs {dwarf_uuid}]"
+    else:
+        # 系统框架使用原始路径
+        dwarf_file = image.path
+        if not os.path.exists(dwarf_file):
+            offset = int(addr, 16) - image.start_int
+            return f"{image.name} + {hex(offset)}"
+    
+    # 使用atos进行符号化
+    cmd = ['atos', '-arch', image.arch, '-o', dwarf_file, 
+           '-l', image.start, addr]
+    try:
+        symbol = subprocess.check_output(cmd, stderr=subprocess.STDOUT, text=True).strip()
+        return symbol if symbol else f"{image.name} + {hex(int(addr, 16) - image.start_int)}"
+    except subprocess.CalledProcessError as e:
+        return f"{addr} [atos error: {e}]"
 
-def parse_stack(stack_str):
-    """解析堆栈字符串"""
+def parse_stack_string(stack_str):
+    """解析堆栈字符串，提取线程ID和地址列表"""
     tid_match = re.search(r'tid:(\d+)', stack_str)
-    stack_match = re.search(r'stack:\[([^\]]+)', stack_str)
+    tid = tid_match.group(1) if tid_match else "unknown"
     
-    tid = tid_match.group(1) if tid_match else 'unknown'
-    addresses = []
-    if stack_match:
-        addresses = [addr.strip() for addr in stack_match.group(1).split(',') if addr.strip()]
+    stack_match = re.search(r'stack:\[([^\]]+)\]', stack_str)
+    if not stack_match:
+        return tid, []
     
+    addresses = [addr.strip() for addr in stack_match.group(1).split(',') if addr.strip()]
     return tid, addresses
 
-def parse_binary_images(binary_images):
-    """解析binaryImages字符串为字典"""
-    images = {}
-    # 示例格式: "0x100000000-0x1000ffff Tutor arm64 <uuid> /path/to/Tutor"
-    image_re = re.compile(r'(0x[0-9a-f]+)\s*-\s*(0x[0-9a-f]+)\s+([^\s]+)\s+([^\s]+)\s+<([^>]+)>\s*(.*)')
+def symbolize_stack(addresses, image_manager, dsym_path, stack_name, progress_offset, total_addresses):
+    """符号化整个堆栈并显示进度"""
+    symbolized = []
+    for i, addr in enumerate(addresses):
+        # 更新进度
+        current_count = progress_offset + i + 1
+        progress = int((current_count / total_addresses) * 100)
+        sys.stdout.write(f"\r[{progress}%] Symbolicating {stack_name} ({current_count}/{total_addresses})")
+        sys.stdout.flush()
+        
+        symbolized.append(symbolize_address(addr, image_manager, dsym_path))
     
-    for line in binary_images:
-        match = image_re.match(line)
-        if match:
-            start, end, name, arch, uuid, path = match.groups()
-            images[name] = {
-                'start': int(start, 16),
-                'end': int(end, 16),
-                'arch': arch,
-                'uuid': uuid,
-                'path': path
-            }
-    return images
+    return symbolized
 
-def get_image_for_address(address, images):
-    """确定地址属于哪个镜像"""
-    addr_num = int(address, 16)
-    for name, image in images.items():
-        if addr_num >= image['start'] and addr_num <= image['end']:
-            return image
-    return None
-
-def symbolicate_stack(addresses, images, binary_path, default_arch='arm64'):
-    """符号化整个堆栈"""
-    results = []
-    for i, address in enumerate(addresses):
-        image = get_image_for_address(address, images)
-        if image:
-            symbol = symbolicating(
-                image.get('arch', default_arch),
-                image.get('path', binary_path),
-                hex(image['start']),
-                address,
-                image.get('uuid')
-            )
-            image_name = os.path.basename(image.get('path', ''))
-        else:
-            symbol = None
-            image_name = 'unknown'
-        
-        if symbol:
-            results.append(f"{i}\t{address}\t{image_name}\t{symbol}")
-        else:
-            results.append(f"{i}\t{address}\t{image_name}\t[unknown]")
-    return '\n'.join(results)
-
-# python3 symbolicate_zombie.py {json_path} {dsym_zip_path} {output_dir}
-def process_zombie_data(json_path, dsym_zip_path, output_dir):
-    """处理僵尸数据"""
-    # 读取 JSON 文件
-    with open(json_path, 'r') as f:
-        data = json.load(f)
+def main():
+    # 解析命令行参数
+    parser = argparse.ArgumentParser(description='Symbolicate zombie crash logs')
+    parser.add_argument('path_to_json', help='Path to input JSON file')
+    parser.add_argument('path_to_dsym', help='Path to dSYM file or directory')
+    parser.add_argument('output_dir', help='Output directory for zombie.log')
+    args = parser.parse_args()
     
-    # 解析binaryImages
-    if 'binaryImages' not in data:
-        print("Error: Missing 'binaryImages' in JSON file")
-        return
+    # 确保输出目录存在
+    os.makedirs(args.output_dir, exist_ok=True)
+    output_file = os.path.join(args.output_dir, 'zombie.log')
     
-    images = parse_binary_images(data['binaryImages'])
-    
-    # 解压 dsym.zip
-    with TemporaryDirectory() as temp_dir:
-        binary_path = extract_dsym(dsym_zip_path, temp_dir)
-        if not binary_path:
-            print("Error: Failed to extract or find binary in dsym.zip")
-            return
-        
-        # 获取二进制信息
-        binary_info = get_binary_info(binary_path)
-        print(f"Binary Info: {binary_info}")
-        
-        # 更新应用镜像信息
-        app_name = os.path.basename(binary_path)
-        if app_name in images:
-            images[app_name]['path'] = binary_path
-            if binary_info['uuids']:
-                images[app_name]['uuid'] = binary_info['uuids'].get('arm64', '')
-        
-        # 解析和符号化堆栈
-        zombie_tid, zombie_addresses = parse_stack(data['zombieStack'])
-        dealloc_tid, dealloc_addresses = parse_stack(data['deallocStack'])
-        
-        zombie_symbolicated = symbolicate_stack(zombie_addresses, images, binary_path)
-        dealloc_symbolicated = symbolicate_stack(dealloc_addresses, images, binary_path)
-        
-        # 生成输出文件
-        output_path = os.path.join(output_dir, 'symbolicated_zombie.log')
-        with open(output_path, 'w') as f:
-            f.write(f"Zombie Class: {data['className']}\n")
-            f.write(f"Zombie Object Address: {data.get('zombieObjectAddress', '0x0')}\n")
-            f.write(f"Selector: {data['selectorName']}\n\n")
-            
-            f.write("Zombie Stack (tid: {}):\n".format(zombie_tid))
-            f.write("Index\tAddress\t\tImage\t\tSymbol\n")
-            f.write(zombie_symbolicated)
-            f.write("\n\n")
-            
-            f.write("Dealloc Stack (tid: {}):\n".format(dealloc_tid))
-            f.write("Index\tAddress\t\tImage\t\tSymbol\n")
-            f.write(dealloc_symbolicated)
-        
-        print(f"Symbolicated output saved to: {output_path}")
-
-if __name__ == '__main__':
-    if len(sys.argv) != 4:
-        print("Usage: python symbolicate_zombie.py <json_path> <dsym_zip_path> <output_dir>")
+    print("[10%] Loading JSON file...")
+    try:
+        with open(args.path_to_json) as f:
+            data = json.load(f)
+    except Exception as e:
+        print(f"Error loading JSON file: {e}")
         sys.exit(1)
     
-    json_path = sys.argv[1]
-    dsym_zip_path = sys.argv[2]
-    output_dir = sys.argv[3]
+    print("[20%] Parsing binary images...")
+    image_manager = ImageManager()
+    for image_str in data['binaryImages']:
+        # 解析二进制映像字符串
+        pattern = r'^(0x[0-9a-fA-F]+)\s*-\s*(0x[0-9a-fA-F]+)\s+([^\s]+)\s+(\w+)\s+<([^>]+)>\s+(.*)$'
+        match = re.match(pattern, image_str.strip())
+        if match:
+            img = BinaryImage(
+                start=match.group(1),
+                end=match.group(2),
+                name=match.group(3),
+                arch=match.group(4),
+                uuid=match.group(5),
+                path=match.group(6)
+            )
+            image_manager.add_image(img)
     
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    if not image_manager.images:
+        print("Warning: No valid binary images found in JSON")
     
-    process_zombie_data(json_path, dsym_zip_path, output_dir)
+    # 解析堆栈地址
+    print("[30%] Parsing stack addresses...")
+    zombie_tid, zombie_addresses = parse_stack_string(data['zombieStack'])
+    dealloc_tid, dealloc_addresses = parse_stack_string(data['deallocStack'])
+    total_addresses = len(zombie_addresses) + len(dealloc_addresses)
+    
+    if total_addresses == 0:
+        print("Warning: No stack addresses found in JSON")
+    
+    # 符号化僵尸堆栈
+    print("\n[40%] Symbolicating zombie stack...")
+    zombie_symbols = symbolize_stack(
+        zombie_addresses, image_manager, args.path_to_dsym,
+        "zombie", 0, total_addresses
+    )
+    
+    # 符号化释放堆栈
+    print("\n[70%] Symbolicating dealloc stack...")
+    dealloc_symbols = symbolize_stack(
+        dealloc_addresses, image_manager, args.path_to_dsym,
+        "dealloc", len(zombie_addresses), total_addresses
+    )
+    
+    # 写入输出文件
+    print("\n[90%] Writing zombie.log file...")
+    with open(output_file, 'w') as f:
+        f.write(f"ClassName: {data.get('className', 'Unknown')}\n")
+        f.write(f"ZombieObjectAddress: {data.get('zombieObjectAddress', '0x0')}\n")
+        f.write(f"SelectorName: {data.get('selectorName', 'Unknown')}\n\n")
+        
+        f.write("ZombieStack:\n")
+        f.write(f"tid: {zombie_tid}\n")
+        for i, (addr, symbol) in enumerate(zip(zombie_addresses, zombie_symbols)):
+            f.write(f"[{i}] {addr} -> {symbol}\n")
+        
+        f.write("\nDeallocStack:\n")
+        f.write(f"tid: {dealloc_tid}\n")
+        for i, (addr, symbol) in enumerate(zip(dealloc_addresses, dealloc_symbols)):
+            f.write(f"[{i}] {addr} -> {symbol}\n")
+    
+    print(f"\n[100%] Symbolication complete. Results saved to {output_file}")
+
+if __name__ == "__main__":
+    main()
