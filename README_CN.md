@@ -112,6 +112,47 @@ pod 'ZombieHunter'
 // 请注意，请使用 WJC 前缀的相关的类和方法，其他类和方法请不要直接使用
 ```
 
+### 如何对 zombieInfo 进行符号化
+
+```Objective-C
+[WJCZombieTest testOCZombieWithAccidentalCoverage:YES]; // 在监控开启后，执行这个方法，进行测试
+```
+
+#### 第一步，保存 json
+
+把 zombieInfo.jsonFileText 字符串保存为 xxx.json 文件
+
+#### 第二步，获得 dsym.zip 文件
+
+获得 dsym.zip 文件
+
+#### 第三步，执行 symbolicate_zombie.py
+
+python3 symbolicate_zombie.py <path_to_json> <path_to_dSYM_file> <output_dir>
+
+#### 第四步，得到 zombie.log 文件 如下
+
+```log
+ClassName: UIView
+ZombieObjectAddress: 0x1259588c0
+SelectorName: tag
+
+ZombieStack:
+tid: 259
+[0] 0x00000001891de338 -> CoreFoundation + 0x21338
+[1] 0x00000001891de1b0 -> CoreFoundation + 0x211b0
+[2] 0x00000001018082dc -> +[WJCZombieTest testOCZombieWithAccidentalCoverage:] (in Demo) (WJCZombieTest.m:39)
+...
+
+DeallocStack:
+tid: 259
+[0] 0x00000001018072a4 -> -[NSObject(DDZombieDetector) hy_newDealloc] (in Demo) (NSObject+DDZombieDetector.m:20)
+[1] 0x000000018ba5c21c -> UIKitCore + 0xd421c
+[2] 0x000000018ba5c114 -> UIKitCore + 0xd4114
+[3] 0x0000000101808248 -> +[WJCZombieTest testOCZombieWithAccidentalCoverage:] (in Demo) (WJCZombieTest.m:25)
+...
+```
+
 ## 贡献
 
 ### 贡献简述

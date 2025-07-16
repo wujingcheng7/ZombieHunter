@@ -116,6 +116,47 @@ pod 'ZombieHunter'
 // Please only use classes and methods with WJC prefix, do not use other classes/methods directly
 ```
 
+### How to Symbolize zombieInfo
+
+```Objective-C
+[WJCZombieTest testOCZombieWithAccidentalCoverage:YES]; // Execute this method after monitoring is enabled for testing
+```
+
+#### Step 1: Save JSON File
+
+Save the zombieInfo.jsonFileText string as an xxx.json file
+
+#### Step 2: Obtain dsym.zip File
+
+Acquire the dsym.zip file
+
+#### Step 3: Execute symbolicate_zombie.py
+
+python3 symbolicate_zombie.py <path_to_json> <path_to_dSYM_file> <output_dir>
+
+#### Step 4: Obtain zombie.log File (Example)
+
+```log
+ClassName: UIView
+ZombieObjectAddress: 0x1259588c0
+SelectorName: tag
+
+ZombieStack:
+tid: 259
+[0] 0x00000001891de338 -> CoreFoundation + 0x21338
+[1] 0x00000001891de1b0 -> CoreFoundation + 0x211b0
+[2] 0x00000001018082dc -> +[WJCZombieTest testOCZombieWithAccidentalCoverage:] (in Demo) (WJCZombieTest.m:39)
+...
+
+DeallocStack:
+tid: 259
+[0] 0x00000001018072a4 -> -[NSObject(DDZombieDetector) hy_newDealloc] (in Demo) (NSObject+DDZombieDetector.m:20)
+[1] 0x000000018ba5c21c -> UIKitCore + 0xd421c
+[2] 0x000000018ba5c114 -> UIKitCore + 0xd4114
+[3] 0x0000000101808248 -> +[WJCZombieTest testOCZombieWithAccidentalCoverage:] (in Demo) (WJCZombieTest.m:25)
+...
+```
+
 ## Contributions
 
 ### Contribution Summary
