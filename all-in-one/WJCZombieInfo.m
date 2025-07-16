@@ -7,6 +7,7 @@
 
 #import "WJCZombieInfo.h"
 #import "WJCZombieHunter.h"
+#import <UIKit/UIKit.h>
 
 @implementation WJCZombieInfo
 
@@ -14,6 +15,12 @@
     if (!_jsonFileText) {
         NSString *addressString = [NSString stringWithFormat:@"%p", self.obj] ?: @"0x0";
         NSDictionary *jsonDict = @{
+            @"model": [[UIDevice currentDevice] model],
+            @"systemVersion": [[UIDevice currentDevice] systemVersion],
+            @"systemName": [[UIDevice currentDevice] systemName],
+            @"bundleId": [[NSBundle mainBundle] bundleIdentifier],
+            @"appVersion": [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"],
+            @"appBuildVersion": [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"],
             @"zombieObjectAddress": addressString ?: @"0x0",
             @"className": self.className,
             @"selectorName": self.selectorName,
