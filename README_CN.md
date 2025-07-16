@@ -60,12 +60,14 @@ pod 'ZombieHunter'
     config.ocConfig.blackList = nil; // 自定义监控黑名单，需要 config.ocConfig.detectStrategy = .blacklist
     config.ocConfig.filterList = nil; // 自定义过滤名单
     config.ocConfig.maxOccupyMemorySizeBytes = 50 * 1024 * 1024; // 自定义最大内存缓存
-    config.ocConfig.handler = ^(NSString * _Nonnull className,
-                                void * _Nonnull obj,
-                                NSString * _Nonnull selectorName,
-                                NSString * _Nonnull deallocStack,
-                                NSString * _Nonnull zombieStack) {
-        // 自定义如何使用这些信息
+    config.ocConfig.handler = ^(WJCZombieInfo * _Nonnull zombieInfo) {
+        // 首先，zombieInfo 提供了丰富的信息。你可以自定义如何使用这些信息
+
+        // 另外，zombieInfo 还提供了 jsonFileText 字符串，可获取详细信息，用法如下:
+        // 步骤1: 将 jsonFileText 字符串保存为 xxx.json 文件
+        // 步骤2: 获得 dsym.zip 文件
+        // 步骤3: 执行 python3 symbolicate_zombie.py {json_path} {dsym_zip_path} {output_dir}
+        // 步骤4: 阅读 {output_dir} 内的 .log 文件
     };
 
     // 自定义 C 野指针 相关设置，这些设置与 NSObject 设置完全独立

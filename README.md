@@ -62,12 +62,14 @@ pod 'ZombieHunter'
     config.ocConfig.blackList = nil; // Custom blacklist (requires config.ocConfig.detectStrategy = .blacklist)
     config.ocConfig.filterList = nil; // Custom filter list
     config.ocConfig.maxOccupyMemorySizeBytes = 50 * 1024 * 1024; // Custom max memory cache
-    config.ocConfig.handler = ^(NSString * _Nonnull className,
-                                void * _Nonnull obj,
-                                NSString * _Nonnull selectorName,
-                                NSString * _Nonnull deallocStack,
-                                NSString * _Nonnull zombieStack) {
-        // Custom handling of this information
+    config.ocConfig.handler = ^(WJCZombieInfo * _Nonnull zombieInfo) {
+        // First, zombieInfo provides comprehensive details. You can customize how to use this information
+
+        // Additionally, zombieInfo offers a jsonFileText string for detailed diagnostics. Usage:
+        // Step 1: Save jsonFileText string as xxx.json file
+        // Step 2: Obtain dsym.zip file
+        // Step 3: Execute: python3 symbolicate_zombie.py {json_path} {dsym_zip_path} {output_dir}
+        // Step 4: Read the .log files in {output_dir}
     };
 
     // Custom C wild pointer settings (completely independent from NSObject settings)
