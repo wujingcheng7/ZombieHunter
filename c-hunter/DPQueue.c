@@ -24,6 +24,9 @@ DPQueue* dp_queue_create(size_t max_size) {
 
 // 入队操作（线程安全）
 void dp_queue_put(DPQueue* queue, void* data) {
+    if (!queue) {
+        return;
+    }
     pthread_mutex_lock(&queue->lock);  // 加锁
 
     // 容量检查：超限时拒绝入队（或可扩展为淘汰旧数据）
@@ -54,6 +57,9 @@ void dp_queue_put(DPQueue* queue, void* data) {
 
 // 出队操作（线程安全）
 void* dp_queue_get(DPQueue* queue) {
+    if (!queue) {
+        return NULL;
+    }
     pthread_mutex_lock(&queue->lock);
     if (!queue->head) {  // 空队列
         pthread_mutex_unlock(&queue->lock);
@@ -76,6 +82,9 @@ void* dp_queue_get(DPQueue* queue) {
 
 // 获取队列长度（线程安全）
 size_t dp_queue_length(DPQueue* queue) {
+    if (!queue) {
+        return 0;
+    }
     pthread_mutex_lock(&queue->lock);
     size_t size = queue->size;
     pthread_mutex_unlock(&queue->lock);
@@ -84,6 +93,9 @@ size_t dp_queue_length(DPQueue* queue) {
 
 // 销毁队列（需由调用者确保内存释放）
 void dp_queue_destroy(DPQueue* queue) {
+    if (!queue) {
+        return;
+    }
     pthread_mutex_lock(&queue->lock);
     DPQueueNode* cur = queue->head;
     while (cur) {
