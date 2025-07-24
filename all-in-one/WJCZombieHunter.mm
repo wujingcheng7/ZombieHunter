@@ -13,6 +13,7 @@
 @interface WJCZombieHunter ()
 
 @property (nonatomic) BOOL isMonitoring;
+@property (nonatomic, strong, nonnull) DDZombieMonitor *ocMonitor;
 
 @end
 
@@ -31,6 +32,14 @@
     return sharedInstance;
 }
 
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _ocMonitor = [DDZombieMonitor sharedInstance];
+    }
+    return self;
+}
+
 - (void)handleMemoryWarning {
     dp_free_some_memory_if_needed();
 }
@@ -42,7 +51,7 @@
     [self shared].isMonitoring = YES;
     if (config.ocConfig.shouldWork) {
         WJCZombieHunterOCConfig *ocConfig = config.ocConfig;
-        DDZombieMonitor *ocMonitor = [DDZombieMonitor sharedInstance];
+        DDZombieMonitor *ocMonitor = [self shared].ocMonitor;
         ocMonitor.crashWhenDetectedZombie = ocConfig.crashWhenDetectedZombie;
         ocMonitor.maxOccupyMemorySize = ocConfig.maxOccupyMemorySizeBytes;
         ocMonitor.traceDeallocStack = ocConfig.traceDeallocStack;
