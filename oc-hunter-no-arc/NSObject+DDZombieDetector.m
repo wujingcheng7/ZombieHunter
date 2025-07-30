@@ -15,9 +15,7 @@
 }
 
 -(void)hy_newDealloc {
-    @autoreleasepool {
-        [[DDZombieMonitor sharedInstance] newDealloc:self];
-    }
+    [[DDZombieMonitor sharedInstance] newDealloc:self];
 }
 
 @end
