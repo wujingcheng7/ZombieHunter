@@ -31,7 +31,6 @@
             UIView* accidentalObject = [UIView new];
             accidentalObject.tag = WJCZombieTestWrongMagicNumber;
             [array addObject:accidentalObject];
-            [[NSRunLoop mainRunLoop] runMode:NSDefaultRunLoopMode beforeDate:nil];
         }
     }
 
