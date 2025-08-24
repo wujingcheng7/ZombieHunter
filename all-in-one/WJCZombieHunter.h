@@ -12,10 +12,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface WJCZombieHunter : NSObject
 
+@property (nonatomic, readonly) BOOL isMonitoring;
+
++ (instancetype)shared;
 + (BOOL)isMonitoring;
 + (void)startMonitoringWithConfig:(WJCZombieHunterConfig *)config NS_SWIFT_NAME(startMonitoring(config:));
+- (void)startMonitoringWithConfig:(WJCZombieHunterConfig *)config NS_SWIFT_NAME(startMonitoring(config:));
 + (void)stopMonitoring;
-+ (NSMutableArray<NSString *>*)binaryImages;
+- (void)stopMonitoring;
++ (NSArray<NSString *>*)binaryImages;
+- (NSArray<NSString *>*)binaryImages;
 
 @end
 

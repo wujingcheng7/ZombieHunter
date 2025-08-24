@@ -12,7 +12,7 @@
 
 @interface WJCZombieHunter ()
 
-@property (nonatomic) BOOL isMonitoring;
+@property (nonatomic, readwrite) BOOL isMonitoring;
 @property (nonatomic, strong, nonnull) DDZombieMonitor *ocMonitor;
 
 @end
@@ -24,10 +24,6 @@
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         sharedInstance = [WJCZombieHunter new];
-        [[NSNotificationCenter defaultCenter] addObserver:sharedInstance
-                                                 selector:@selector(handleMemoryWarning)
-                                                     name:UIApplicationDidReceiveMemoryWarningNotification
-                                                   object:nil];
     });
     return sharedInstance;
 }
@@ -45,62 +41,87 @@
 }
 
 + (void)startMonitoringWithConfig:(WJCZombieHunterConfig *)config {
-    if ([self isMonitoring]) {
-        [self stopMonitoring];
-    }
-    [self shared].isMonitoring = YES;
-    if (config.ocConfig.shouldWork) {
-        WJCZombieHunterOCConfig *ocConfig = config.ocConfig;
-        DDZombieMonitor *ocMonitor = [self shared].ocMonitor;
-        ocMonitor.crashWhenDetectedZombie = ocConfig.crashWhenDetectedZombie;
-        ocMonitor.maxOccupyMemorySize = ocConfig.maxOccupyMemorySizeBytes;
-        ocMonitor.traceDeallocStack = ocConfig.traceDeallocStack;
-        ocMonitor.detectStrategy = [self strategyConvert:ocConfig.detectStrategy];
-        ocMonitor.blackList = ocConfig.blackList;
-        ocMonitor.whiteList = ocConfig.whiteList;
-        ocMonitor.filterList = ocConfig.filterList;
-        WJCZombieDetectionHandler handler = ocConfig.handler;
-        if (handler) {
-            ocMonitor.handle = ^(NSString *className,
-                                 void *obj,
-                                 NSString *selectorName,
-                                 NSString *deallocStack,
-                                 NSString *zombieStack) {
-                WJCZombieInfo *zombieInfo = [WJCZombieInfo new];
-                zombieInfo.className = className ?: @"";
-                zombieInfo.obj = obj;
-                zombieInfo.selectorName = selectorName ?: @"";
-                zombieInfo.deallocStack = deallocStack ?: @"";
-                zombieInfo.zombieStack = zombieStack ?: @"";
-                if (handler) {
-                    handler(zombieInfo);
-                }
-            };
-        } else {
-            ocMonitor.handle = nil;
+    [[self shared] startMonitoringWithConfig:config];
+}
+
+- (void)startMonitoringWithConfig:(WJCZombieHunterConfig *)config {
+    [self stopMonitoring];
+    @synchronized (self) {
+        self.isMonitoring = YES;
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(handleMemoryWarning)
+                                                     name:UIApplicationDidReceiveMemoryWarningNotification
+                                                   object:nil];
+        if (config.ocConfig.shouldWork) {
+            WJCZombieHunterOCConfig *ocConfig = config.ocConfig;
+            DDZombieMonitor *ocMonitor = self.ocMonitor;
+            ocMonitor.crashWhenDetectedZombie = ocConfig.crashWhenDetectedZombie;
+            ocMonitor.maxOccupyMemorySize = ocConfig.maxOccupyMemorySizeBytes;
+            ocMonitor.traceDeallocStack = ocConfig.traceDeallocStack;
+            ocMonitor.detectStrategy = [WJCZombieHunter strategyConvert:ocConfig.detectStrategy];
+            ocMonitor.blackList = ocConfig.blackList;
+            ocMonitor.whiteList = ocConfig.whiteList;
+            ocMonitor.filterList = ocConfig.filterList;
+            WJCZombieDetectionHandler handler = ocConfig.handler;
+            if (handler) {
+                ocMonitor.handle = ^(NSString *className,
+                                     void *obj,
+                                     NSString *selectorName,
+                                     NSString *deallocStack,
+                                     NSString *zombieStack) {
+                    WJCZombieInfo *zombieInfo = [WJCZombieInfo new];
+                    zombieInfo.className = className ?: @"";
+                    zombieInfo.obj = obj;
+                    zombieInfo.selectorName = selectorName ?: @"";
+                    zombieInfo.deallocStack = deallocStack ?: @"";
+                    zombieInfo.zombieStack = zombieStack ?: @"";
+                    if (handler) {
+                        handler(zombieInfo);
+                    }
+                };
+            } else {
+                ocMonitor.handle = nil;
+            }
+            [ocMonitor startMonitor];
         }
-        [ocMonitor startMonitor];
-    }
-    if (config.cConfig.shouldWork) {
-        WJCZombieHunterCConfig *cConfig = config.cConfig;
-        dp_maxStealMemorySize = (int)cConfig.maxStealMemorySizeBytes;
-        dp_maxStealMemoryNumber = (int)cConfig.maxStealMemoryNumber;
-        dp_batchFreeNumber = (int)cConfig.batchFreeNumber;
-        dp_start_monitor();
+        if (config.cConfig.shouldWork) {
+            WJCZombieHunterCConfig *cConfig = config.cConfig;
+            dp_maxStealMemorySize = (int)cConfig.maxStealMemorySizeBytes;
+            dp_maxStealMemoryNumber = (int)cConfig.maxStealMemoryNumber;
+            dp_batchFreeNumber = (int)cConfig.batchFreeNumber;
+            dp_start_monitor();
+        }
+
     }
 }
 
 + (void)stopMonitoring {
-    [self shared].isMonitoring = NO;
-    [[DDZombieMonitor sharedInstance] stopMonitor]; // OC stop
-    dp_end_monitor(); // C stop
+    [[self shared] stopMonitoring];
+}
+
+- (void)stopMonitoring {
+    @synchronized (self) {
+        if (!self.isMonitoring) {
+            return;
+        }
+        self.isMonitoring = NO;
+        [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                        name:UIApplicationDidReceiveMemoryWarningNotification
+                                                      object:nil];
+        [[DDZombieMonitor sharedInstance] stopMonitor]; // OC stop
+        dp_end_monitor(); // C stop
+    }
 }
 
 + (BOOL)isMonitoring {
     return [self shared].isMonitoring;
 }
 
-+ (NSMutableArray *)binaryImages {
++ (NSArray *)binaryImages {
+    return [DDBinaryImages binaryImages];
+}
+
+- (NSArray *)binaryImages {
     return [DDBinaryImages binaryImages];
 }
 
